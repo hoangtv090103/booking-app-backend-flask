@@ -1,4 +1,3 @@
-from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
