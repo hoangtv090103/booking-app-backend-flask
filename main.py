@@ -1,10 +1,15 @@
-from flask import Flask, jsonify, request
-from models import User, Account
-from database import db_session
+from flask import Flask, request, jsonify
+
+from database import db_session, DATABASE_URL
+from models import Account, User
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:f5GBG1F4C46-24eABgAAE2GAE*D4ECaf@' \
-                                        'viaduct.proxy.rlwy.net:34049/railway'
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
 
 
 @app.route('/')
@@ -27,36 +32,23 @@ def tutor_manager():
 
 @app.route('/tutor-manager/login', methods=['GET', 'POST'])
 def login():
-    request_data = request.get_json()
-    username = request_data['username']
-    password = request_data['password']
-    result = Account.query.filter_by(login=username, password=password).first()
-    if result:
-        return jsonify(
-            {
-                'login': result.login,
-                # 'username': result.user.name,
-                # 'email': result.user.email
-            }
-        )
-    else:
-        return jsonify(
-            {
-                'message': 'Invalid username or password'
-            }
-        )
+    if request.method == 'POST':
+        login_acc = request.json.get('login')
+        password = request.json.get('password')
+        account = Account.query.filter_by(login=login_acc).first()
+        if account and account.password == password:
+            return jsonify(
+                {
+                    'login': account.login,
+                    'username': account.user.name,
+                    'email': account.user.email
+                }
+            )
+        return jsonify({'message': 'Invalid login or password'})
 
 
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    db_session.remove()
-
-
-if __name__ == '__main__':
-    from models import User
-    from database import init_db
-    init_db()
-    acc = Account(login='admin', password='admin')
-    db_session.add(acc)
-    db_session.commit()
+if __name__ == "__main__":
+    # user = User.query.filter_by(name='admin')
+    # user.account_id = Account.query.filter_by(login="admin").first().id
+    # db_session.commit()
     app.run(port=5000, debug=True)

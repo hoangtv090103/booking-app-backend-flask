@@ -1,3 +1,4 @@
+from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -27,9 +28,10 @@ class User(Base):
     email = Column(String(120), unique=True)
     account_id = Column(Integer, ForeignKey('account.id'), unique=True)
 
-    def __init__(self, name=None, email=None):
+    def __init__(self, name=None, email=None, account_id=None):
         self.name = name
         self.email = email
+        self.account_id = account_id
 
     def __repr__(self):
         return f'<User {self.name!r}>'

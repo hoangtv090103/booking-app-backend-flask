@@ -1,8 +1,17 @@
-from sqlalchemy import create_engine, MetaData
+import os
+from os.path import join, dirname
+
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
 
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+SECRET_KEY = os.environ.get("SECRET_KEY")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
 engine = create_engine(
-    'postgresql://postgres:f5GBG1F4C46-24eABgAAE2GAE*D4ECaf@viaduct.proxy.rlwy.net:34049/railway',
+    DATABASE_URL
 )
 
 db_session = scoped_session(
@@ -14,7 +23,6 @@ db_session = scoped_session(
 )
 Base = declarative_base()
 Base.query = db_session.query_property()
-# metadata = MetaData()
 
 
 def init_db():
